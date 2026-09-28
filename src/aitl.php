@@ -876,6 +876,7 @@ function aitl_check(string $src): array {
     return [
         'ok' => !$errors,
         'aitl' => AITL_VERSION,
+        'taal' => $lang,
         'fouten' => $errors,
         'waarschuwingen' => $warnings,
         'principes' => $principles,

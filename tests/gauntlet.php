@@ -301,6 +301,11 @@ if (part('I. Opdrachtregel')) {
     $out = $tmp . '.html';
     exec("$bin rapport " . escapeshellarg($examples[0]) . ' -o ' . escapeshellarg($out) . ' 2>&1', $o4, $code4);
     ok('I rapport schrijft HTML', $code4 === 0 && str_starts_with((string)@file_get_contents($out), '<!doctype html>'));
+    exec("$bin check " . escapeshellarg(__DIR__ . '/../voorbeelden/ai-transparent-label.aitl') . ' 2>&1', $o5, $code5);
+    $t5 = implode("\n", $o5);
+    ok('I Engelse uitleg → Engelse samenvatting', $code5 === 0 && str_contains($t5, 'Readability:') && str_contains($t5, '0 error(s)') && !str_contains($t5, 'Leesbaarheid'), $t5);
+    exec("$bin casus - < " . escapeshellarg($examples[0]) . ' 2>&1', $o6, $code6);
+    ok('I bron via standaardinvoer (-)', $code6 === 0 && str_contains(implode("\n", $o6), '■'), implode("\n", $o6));
     @unlink($tmp); @unlink($out);
 }
 

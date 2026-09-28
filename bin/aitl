@@ -39,8 +39,10 @@ switch ($cmd) {
         $show($r['waarschuwingen']);
         foreach ($r['principes'] as $p) echo ($p['ok'] ? '✔' : '✗') . " {$p['nr']}. {$p['titel']}\n";
         $l = $r['leesbaarheid'];
-        if ($l['score'] !== null) echo 'Leesbaarheid: ' . $l['label'] . ' (' . aitl_num((float)$l['score'], 'nl', 0) . ', ' . aitl_num((float)$l['woordenPerZin'], 'nl', 1) . " woorden per zin)\n";
-        echo count($r['fouten']) . ' fout(en), ' . count($r['waarschuwingen']) . " waarschuwing(en)\n";
+        $en = $r['taal'] === 'en';
+        if ($l['score'] !== null) echo ($en ? 'Readability: ' : 'Leesbaarheid: ') . $l['label'] . ' (' . aitl_num((float)$l['score'], $r['taal'], 0) . ', '
+            . aitl_num((float)$l['woordenPerZin'], $r['taal'], 1) . ($en ? " words per sentence)\n" : " woorden per zin)\n");
+        echo count($r['fouten']) . ($en ? ' error(s), ' : ' fout(en), ') . count($r['waarschuwingen']) . ($en ? " warning(s)\n" : " waarschuwing(en)\n");
         exit($r['ok'] ? 0 : 1);
     case 'rapport':
         $show($r['fouten']);
