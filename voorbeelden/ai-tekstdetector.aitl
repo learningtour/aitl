@@ -1,0 +1,67 @@
+# Voorbeeld: een detector die schat of een tekst met AI is geschreven.
+# Laat zien hoe AITL eerlijk uitlegt wat een kans wél en níét zegt.
+
+uitleg "Detector voor AI-geschreven tekst"
+  organisatie: Voorbeeld College
+  systeem: Tekstdetector 4
+  versie: 2026-09-01
+  doelgroep: docenten en studenten
+  samenvatting: De detector geeft een schatting of een tekst door AI is geschreven.
+    Die schatting is geen bewijs. Een docent gebruikt haar alleen als aanleiding voor een gesprek.
+
+doel
+  duiding: Docenten helpen om teksten te vinden waarover ze met de student in gesprek willen.
+
+begrip vals positief
+  ook: valse melding
+  duiding: De detector zegt dat een tekst met AI is geschreven, terwijl een mens hem schreef.
+
+gegeven ai_kans
+  type: percentage
+  label: geschatte kans op AI-tekst
+  duiding: Hoe waarschijnlijk de detector het vindt dat de tekst met AI is geschreven.
+  techniek: Uitvoer van een classificatiemodel, gekalibreerd op een testset van 20.000 teksten.
+
+gegeven woorden
+  type: getal
+  label: aantal woorden
+  eenheid: woorden
+  duiding: Hoe lang de tekst is.
+
+regel melding: "geen melding"
+  label: melding aan de docent
+  tenzij ai_kans >= 90% en woorden >= 300 dan "gesprek aanbevolen", want de kans is hoog en de tekst is lang genoeg om iets te zeggen
+  tenzij woorden < 300 dan "te kort om iets te zeggen", want bij korte teksten is de schatting onbetrouwbaar
+  duiding: Alleen bij een hoge kans en een tekst van minstens 300 woorden krijgt de docent het advies om een gesprek te voeren.
+  techniek: Drempel op de gekalibreerde kans; korte teksten worden altijd uitgesloten omdat de variantie daar te groot is.
+
+casus "Lang verslag met hoge score"
+  ai_kans: 93%
+  woorden: 1450
+  verwacht melding: gesprek aanbevolen
+
+casus "Korte reflectie met hoge score"
+  ai_kans: 97%
+  woorden: 180
+  verwacht melding: te kort om iets te zeggen
+  duiding: Ook bij een hoge score volgt geen advies, omdat de tekst te kort is.
+
+stap "Tekst in stukjes verdelen"
+  duiding: De detector knipt de tekst op in korte stukjes en kijkt per stukje hoe voorspelbaar de woorden zijn.
+  techniek: Tokenisatie en berekening van perplexiteit per venster van 128 tokens.
+  metafoor: Zoals een ervaren lezer die merkt dat een tekst 'te glad' loopt.
+    grens: Een lezer kent de student. De detector kent alleen woordpatronen, en ook mensen schrijven soms heel voorspelbaar.
+
+uitkomst "Een kans, geen oordeel"
+  duiding: De detector geeft een kans. Bij 90% verwacht je dat ongeveer 1 op de 10 van zulke teksten toch door een mens is geschreven.
+  zekerheid: 90%
+
+beperking "Valse meldingen"
+  duiding: Een vals positief komt voor, vaker bij studenten die in een tweede taal schrijven.
+  techniek: Gemeten vals-positiefratio 4% over alle teksten, 9% bij tweedetaalschrijvers.
+
+beperking "Omzeilen"
+  duiding: Wie een AI-tekst herschrijft of laat herschrijven, kan de detector vaak misleiden.
+
+toezicht
+  duiding: De detector beslist nooit over een cijfer of sanctie. De docent voert eerst een gesprek met de student, en de examencommissie beslist.

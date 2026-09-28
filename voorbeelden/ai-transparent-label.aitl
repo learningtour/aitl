@@ -1,0 +1,55 @@
+# Example (English): how AI Transparent labels an AI-generated image.
+# AITL keywords work in English too; the report is then written in English.
+
+explain "How an AI Transparent label is made"
+  organisation: AI Transparent
+  system: AI Transparent labelling service 1.0
+  version: 2026-09-28
+  audience: anyone who receives a labelled image
+  language: en
+  summary: When an organisation labels an AI image, AI Transparent adds several marks to the file.
+    You can see some of them, others are hidden in the file. Anyone can check the label for free.
+
+purpose
+  plain: Make it clear, for everyone, that an image was made or edited with AI, as the EU AI Act requires.
+
+term fingerprint
+  plain: A short code that is calculated from the file. Change one pixel and the code changes completely.
+  technical: SHA-256 hash over the file bytes.
+  metaphor: Like a real fingerprint: unique for each file.
+    limit: Real fingerprints can be found on objects. A file fingerprint only tells you whether you have exactly the same file.
+
+term content credentials
+  also: C2PA
+  plain: A standard way to store where a file comes from, sealed inside the file.
+
+step "Visible label"
+  plain: A small badge is placed in the corner of the image, saying it was made with AI.
+  technical: Badge rendered with GD onto the image pixels, bottom-left by default.
+
+step "Hidden label in the file"
+  plain: Information about the AI origin is written inside the file, where software can read it.
+  technical: XMP metadata with IPTC DigitalSourceType trainedAlgorithmicMedia.
+
+step "Content Credentials with a seal"
+  plain: The label is also stored as content credentials and sealed with a digital signature and a time stamp.
+  technical: C2PA 2.x manifest, signed with ES256 and an RFC 3161 time stamp from DigiCert.
+  metaphor: Like a sealed envelope with a postmark: you can see if someone opened it, and when it was sent.
+    limit: An envelope can be thrown away. If someone removes the credentials from the file, the other marks and the register still exist.
+
+step "Entry in the register"
+  plain: The fingerprint of the file is stored in a public register, so the label can still be found if the file loses its hidden information.
+  technical: Registry entry with the SHA-256 fingerprint and an Ed25519-signed manifest.
+
+outcome "A labelled image"
+  plain: A copy of the image that carries a visible badge, hidden labels and a verifiable seal.
+
+limitation "Screenshots"
+  plain: If someone takes a screenshot, the hidden marks and the seal are lost. The visible badge stays, unless it is cut away.
+
+limitation "Not a detector"
+  plain: The service shows that a label was added. It cannot tell whether an unlabelled image was made with AI.
+
+oversight
+  plain: The organisation that labels the image is responsible for the label. Anyone can check a label at app.aitransparent.eu.
+  contact: info@learningtour.nl

@@ -1,0 +1,66 @@
+#!/usr/bin/env php
+<?php
+// AITL — opdrachtregel.
+//   aitl controleer uitleg.aitl         controleert de vijf principes, leesbaarheid en regels
+//   aitl rapport uitleg.aitl [-o x.html] maakt het rapport voor iedereen (HTML)
+//   aitl casus uitleg.aitl              rekent de casussen door en toont de route
+//   aitl json uitleg.aitl               het rapportmodel als JSON
+// Engelse varianten: check, report, cases, json.
+
+declare(strict_types=1);
+
+require __DIR__ . '/../src/render.php';
+
+$args = array_slice($argv, 1);
+$cmd = $args[0] ?? '';
+$file = $args[1] ?? '';
+$map = ['check' => 'controleer', 'report' => 'rapport', 'cases' => 'casus', 'controleren' => 'controleer'];
+$cmd = $map[$cmd] ?? $cmd;
+if (!in_array($cmd, ['controleer', 'rapport', 'casus', 'json'], true) || $file === '') {
+    fwrite(STDERR, "AITL " . AITL_VERSION . " — AI Transparent Language\n\n"
+        . "Gebruik:\n  aitl controleer <bestand.aitl>\n  aitl rapport <bestand.aitl> [-o rapport.html]\n"
+        . "  aitl casus <bestand.aitl>\n  aitl json <bestand.aitl>\n");
+    exit(2);
+}
+$src = $file === '-' ? (string)stream_get_contents(STDIN) : @file_get_contents($file);
+if ($src === false) { fwrite(STDERR, "Kan '$file' niet lezen.\n"); exit(2); }
+$r = aitl_check($src);
+
+$show = function (array $list) use ($file) {
+    foreach ($list as $d) {
+        fwrite(STDERR, sprintf("%s:%d: %s %s: %s\n", $file, $d['regel'], $d['niveau'], $d['code'], $d['melding']));
+        if ($d['tip'] !== '') fwrite(STDERR, "    tip: {$d['tip']}\n");
+    }
+};
+
+switch ($cmd) {
+    case 'controleer':
+        $show($r['fouten']);
+        $show($r['waarschuwingen']);
+        foreach ($r['principes'] as $p) echo ($p['ok'] ? '✔' : '✗') . " {$p['nr']}. {$p['titel']}\n";
+        $l = $r['leesbaarheid'];
+        if ($l['score'] !== null) echo 'Leesbaarheid: ' . $l['label'] . ' (' . aitl_num((float)$l['score'], 'nl', 0) . ', ' . aitl_num((float)$l['woordenPerZin'], 'nl', 1) . " woorden per zin)\n";
+        echo count($r['fouten']) . ' fout(en), ' . count($r['waarschuwingen']) . " waarschuwing(en)\n";
+        exit($r['ok'] ? 0 : 1);
+    case 'rapport':
+        $show($r['fouten']);
+        if (!$r['model'] || !$r['ok']) { fwrite(STDERR, "Geen rapport: los eerst de fouten op.\n"); exit(1); }
+        $html = aitl_render_html($r['model']);
+        $out = null;
+        foreach ($args as $i => $a) if ($a === '-o') $out = $args[$i + 1] ?? null;
+        if ($out) { file_put_contents($out, $html); echo "Rapport: $out\n"; } else { echo $html; }
+        exit(0);
+    case 'casus':
+        $show($r['fouten']);
+        foreach ($r['model']['casussen'] ?? [] as $c) {
+            echo "■ {$c['titel']}\n";
+            foreach ($c['gegevens'] as $g) echo "    {$g['label']}: {$g['waarde']}\n";
+            foreach ($c['uitkomsten'] as $u) echo "  → {$u['route']}\n";
+            foreach ($c['verwacht'] as $v) echo '  ' . ($v['klopt'] ? '✔' : '✗') . " verwacht {$v['regel']} = {$v['verwacht']}\n";
+        }
+        exit($r['ok'] ? 0 : 1);
+    case 'json':
+        echo json_encode(['ok' => $r['ok'], 'fouten' => $r['fouten'], 'waarschuwingen' => $r['waarschuwingen'], 'model' => $r['model']],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), "\n";
+        exit($r['ok'] ? 0 : 1);
+}

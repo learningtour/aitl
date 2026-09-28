@@ -1,0 +1,77 @@
+# Voorbeeld: een AI-beeldgenerator (diffusiemodel) voor lesmateriaal.
+# Laat zien hoe AITL een lerend systeem uitlegt: stappen, vergelijkingen met grens,
+# begrippen en de zekerheid van het systeem.
+
+uitleg "Beeldgenerator voor lesmateriaal"
+  organisatie: Voorbeeld College
+  systeem: Diffusiemodel (open source), versie 3
+  versie: 2026-09-01
+  doelgroep: docenten, studenten en ouders
+  samenvatting: Docenten typen een korte beschrijving, en de computer maakt daar een plaatje bij.
+    Het systeem heeft geleerd van miljoenen bestaande afbeeldingen. Het bedenkt dus niets echt nieuws,
+    maar combineert wat het eerder heeft gezien. Elke afbeelding krijgt een label dat ze met AI is gemaakt.
+
+doel
+  duiding: Snel passende illustraties maken voor lesmateriaal, zonder dat er een illustrator nodig is.
+  techniek: Tekst-naar-beeldgeneratie met een latent diffusiemodel, lokaal gehost.
+
+begrip diffusiemodel
+  ook: beeldmodel
+  duiding: Een soort AI die leert plaatjes te maken door stap voor stap ruis weg te halen.
+  metafoor: Denk aan een beeldhouwer die uit een ruw blok steen langzaam een figuur haalt.
+    grens: Een beeldhouwer weet wat hij maakt. Het model volgt alleen patronen die het tijdens het leren heeft gezien.
+
+begrip prompt
+  ook: opdracht
+  duiding: De korte tekst waarin je beschrijft wat er op het plaatje moet komen.
+
+begrip trainingsdata
+  duiding: De verzameling bestaande plaatjes met beschrijvingen waarvan het systeem heeft geleerd.
+  techniek: Circa 2 miljard beeld-tekstparen uit openbare webbronnen.
+
+gegeven opdracht
+  type: tekst
+  label: beschrijving van de docent
+  duiding: Wat de docent intypt, bijvoorbeeld: een boer op een fiets in de regen.
+
+stap "De beschrijving lezen"
+  duiding: De computer zet de woorden van de prompt om in een reeks getallen die de betekenis vastleggen.
+  techniek: Een tekst-encoder (CLIP ViT-L/14) maakt van de prompt een reeks embeddings van 768 dimensies.
+  metafoor: Het lijkt op een postcode voor betekenis: woorden die op elkaar lijken, krijgen postcodes die dicht bij elkaar liggen.
+    grens: Een postcode wijst één vaste plek aan. Betekenis hangt ook af van de rest van de zin.
+
+stap "Beginnen met ruis"
+  duiding: Het systeem begint met een plaatje vol willekeurige puntjes, zoals sneeuw op een oude tv.
+  techniek: Initialisatie met Gaussische ruis in de latente ruimte (64×64×4), met een willekeurige startwaarde.
+  waarde: startwaarde 48213
+
+stap "Stap voor stap verbeteren"
+  duiding: In dertig rondes haalt het systeem steeds een beetje ruis weg. Elke ronde lijkt het plaatje meer op de beschrijving.
+  techniek: 30 denoising-stappen met een U-Net, classifier-free guidance met schaal 7.
+  metafoor: Zoals een foto die langzaam scherp wordt in een ouderwetse ontwikkelbak.
+    grens: Een foto toont iets wat echt voor de lens stond. Hier bestond het beeld nooit.
+  waarde: 30 stappen, guidance 7
+
+stap "Controle op ongewenste beelden"
+  duiding: Voordat het plaatje verschijnt, kijkt een tweede systeem of er iets ongepasts op staat.
+  techniek: Een beeldclassificatie-filter keurt de afbeelding af boven een drempel van 0,3.
+  zekerheid: 94%
+
+uitkomst "Het gemaakte plaatje"
+  duiding: Een afbeelding van 1024 bij 1024 beeldpunten, met een zichtbaar en een onzichtbaar label dat ze met AI is gemaakt.
+  techniek: PNG met XMP-metadata (IPTC DigitalSourceType trainedAlgorithmicMedia) en een C2PA-manifest.
+
+beperking "Vooroordelen uit de trainingsdata"
+  duiding: Het systeem herhaalt wat het vaak heeft gezien. Vraag je om een dokter, dan krijg je vaker een man te zien.
+  techniek: Representatiebias in de trainingsdata wordt niet gecorrigeerd.
+
+beperking "Tekst en handen"
+  duiding: Letters in het plaatje en handen met vijf vingers gaan vaak mis.
+
+toezicht
+  duiding: De docent bekijkt elk plaatje voordat het in lesmateriaal komt. Een afbeelding van een echt bestaand persoon mag niet worden gemaakt.
+  contact: ict@voorbeeldcollege.example
+
+bron "Uitleg over diffusiemodellen"
+  url: https://nl.wikipedia.org/wiki/Diffusiemodel
+  duiding: Een algemene inleiding.

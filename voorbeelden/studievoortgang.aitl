@@ -1,0 +1,68 @@
+# Voorbeeld: een regelgebaseerd signaal voor studievoortgang.
+# Laat zien hoe AITL regels doorrekent en bij elke uitkomst de route geeft.
+
+uitleg "Signaal studievoortgang"
+  organisatie: Voorbeeld College
+  systeem: Voortgangsmonitor 2.1
+  versie: 2026-09-01
+  doelgroep: studenten, ouders en mentoren
+  samenvatting: Dit systeem kijkt elke week naar aanwezigheid en cijfers.
+    Gaat het ergens mis, dan krijgt de mentor een seintje om met de student te praten.
+    Het systeem beslist zelf niets over de student.
+
+doel
+  duiding: Mentoren helpen om op tijd te zien welke student extra aandacht nodig heeft.
+  techniek: Wekelijkse batchberekening op basis van twee kenmerken uit het studentvolgsysteem.
+  metafoor: Het werkt als het waarschuwingslampje in een auto.
+    grens: Een lampje zegt dat je moet kijken, niet wat er kapot is. Het gesprek met de student blijft nodig.
+
+gegeven aanwezigheid
+  type: percentage
+  label: aanwezigheid
+  duiding: Hoe vaak de student de afgelopen vier weken bij de lessen was.
+  techniek: Aantal bijgewoonde lesuren gedeeld door het aantal geplande lesuren, over 28 dagen.
+
+gegeven gemiddeld_cijfer
+  type: getal
+  label: gemiddeld cijfer
+  duiding: Het gemiddelde van alle cijfers van dit schooljaar.
+  techniek: Ongewogen rekenkundig gemiddelde van de resultaten in het studentvolgsysteem.
+
+gegeven eigen_melding
+  type: janee
+  label: zelf om hulp gevraagd
+  duiding: Of de student zelf heeft aangegeven hulp te willen.
+
+regel aandacht_nodig: nee
+  label: seintje voor de mentor
+  tenzij aanwezigheid < 80% dan ja, want de aanwezigheid is lager dan 80%
+  tenzij gemiddeld_cijfer < 5,5 dan ja, want het gemiddelde cijfer is onvoldoende
+  tenzij eigen_melding dan ja, want de student heeft zelf om hulp gevraagd
+  duiding: De mentor krijgt een seintje als de student vaak afwezig is, onvoldoendes haalt of zelf om hulp vraagt.
+  techniek: Beslisregel met drie uitzonderingen op de standaardwaarde nee; de laatste passende uitzondering bepaalt de uitkomst.
+
+casus "Student met lage aanwezigheid"
+  aanwezigheid: 72%
+  gemiddeld_cijfer: 6,8
+  eigen_melding: nee
+  verwacht aandacht_nodig: ja
+  duiding: Deze student haalt goede cijfers, maar was vaak afwezig.
+
+casus "Student die het goed doet"
+  aanwezigheid: 95%
+  gemiddeld_cijfer: 7,4
+  eigen_melding: nee
+  verwacht aandacht_nodig: nee
+
+beperking "Geen verklaring voor afwezigheid"
+  duiding: Het systeem weet niet waarom een student afwezig was. Ziekte en spijbelen tellen hetzelfde.
+  techniek: De bron bevat alleen presentie, geen redenen van verzuim.
+
+beperking "Vaste grenzen"
+  duiding: De grens van 80% is een keuze van de school. Een student met 79% krijgt een seintje, een student met 81% niet.
+  metafoor: Het is een streep op de weg, geen glijdende schaal.
+    grens: Anders dan bij verkeer is er geen boete: het seintje leidt alleen tot een gesprek.
+
+toezicht
+  duiding: De mentor beslist of er een gesprek komt. Studenten kunnen hun gegevens inzien bij de administratie.
+  contact: mentoraat@voorbeeldcollege.example

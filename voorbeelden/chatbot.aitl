@@ -1,0 +1,63 @@
+# Voorbeeld: een chatbot voor de studentenservice, gebouwd op een taalmodel.
+
+uitleg "Chatbot studentenservice"
+  organisatie: Voorbeeld College
+  systeem: Assistent 'Vraag het Vera', op basis van een groot taalmodel
+  versie: 2026-09-01
+  doelgroep: studenten en hun ouders
+  samenvatting: Vera beantwoordt vragen over roosters, inschrijven en regels van de school.
+    Ze zoekt eerst in de eigen documenten van de school en schrijft dan een antwoord.
+    Vera kan zich vergissen. Bij twijfel verwijst ze naar een medewerker.
+
+doel
+  duiding: Studenten dag en nacht snel helpen met veelgestelde vragen, zodat medewerkers meer tijd hebben voor lastige vragen.
+
+begrip taalmodel
+  ook: groot taalmodel, llm
+  duiding: Een computerprogramma dat heeft geleerd hoe zinnen meestal verder gaan, door enorm veel tekst te lezen.
+  techniek: Transformer-model met tientallen miljarden parameters, getraind op openbare tekst en daarna bijgestuurd met menselijke feedback.
+  metafoor: Vergelijk het met iemand die ontzettend veel heeft gelezen en goed kan navertellen.
+    grens: Die persoon weet wat waar is. Een taalmodel weet dat niet: het kiest de woorden die het meest waarschijnlijk volgen.
+
+begrip hallucinatie
+  duiding: Een antwoord dat overtuigend klinkt, maar niet klopt.
+
+stap "De vraag begrijpen"
+  duiding: Vera haalt uit je vraag de belangrijkste woorden en het onderwerp.
+  techniek: De vraag wordt omgezet in een embedding voor semantisch zoeken.
+
+stap "Zoeken in de documenten van de school"
+  duiding: Vera zoekt de stukken tekst uit het studentenstatuut en de roosters die het beste bij je vraag passen.
+  techniek: Retrieval-augmented generation: top-5 passages op cosinusgelijkenis uit een vectorindex van 1.200 schooldocumenten.
+  metafoor: Zoals een bibliothecaris die eerst de juiste boeken van de plank pakt voordat ze antwoord geeft.
+    grens: Een bibliothecaris leest de boeken echt. Vera kiest passages op overeenkomst in woorden en betekenis, en kan zo een verkeerde passage pakken.
+
+stap "Een antwoord schrijven"
+  duiding: Het taalmodel schrijft een antwoord op basis van die stukken tekst, en noemt de bron.
+  techniek: Generatie met temperatuur 0,2 en een systeeminstructie om alleen uit de gevonden passages te antwoorden.
+  waarde: temperatuur 0,2; maximaal 300 woorden
+
+stap "Twijfel herkennen"
+  duiding: Als Vera onvoldoende passende tekst vindt, zegt ze dat ze het niet zeker weet en verwijst ze naar een medewerker.
+  techniek: Doorverwijzing als de hoogste gelijkenisscore onder 0,75 ligt.
+
+factor "Passende schooldocumenten"
+  gewicht: groot
+  richting: verhoogt
+  duiding: Hoe beter de documenten van de school bij je vraag passen, hoe beter het antwoord.
+
+factor "Duidelijkheid van de vraag"
+  gewicht: middel
+  richting: verhoogt
+  duiding: Een concrete vraag geeft een beter antwoord dan een vage vraag.
+
+beperking "Vergissingen"
+  duiding: Vera kan een hallucinatie geven: een antwoord dat klopt lijkt, maar niet waar is. Controleer belangrijke zaken zoals deadlines altijd in het studentenportaal.
+  techniek: Ook met retrieval blijft het risico op onjuiste generatie bestaan; in tests klopte ongeveer 92% van de antwoorden volledig.
+
+beperking "Geen persoonlijke gegevens"
+  duiding: Vera kan je cijfers en je dossier niet inzien. Daarvoor ga je naar je mentor.
+
+toezicht
+  duiding: Medewerkers van de studentenservice lezen steekproeven van gesprekken en verbeteren de documenten. Je kunt altijd een mens vragen.
+  contact: studentenservice@voorbeeldcollege.example
