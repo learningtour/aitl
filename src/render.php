@@ -128,7 +128,9 @@ function aitl_render_item(array $it, array $terms, array $ui, string $lang, stri
 
 /**
  * Het volledige rapport als zelfstandige HTML-pagina.
- * $opts (optioneel): publicatie => [org, datum, id, url, bronUrl, ondertekend(bool)]
+ * $opts (optioneel): publicatie => [org, datum, id, url, bronUrl, ondertekend(bool)],
+ *                    lettertypeCss => @font-face-regels van de aanroeper (bijv. voor Inter);
+ *                    zonder deze optie gebruikt het rapport het systeemlettertype.
  */
 function aitl_render_html(array $m, array $opts = []): string {
     $lang = $m['taal'] === 'en' ? 'en' : 'nl';
@@ -297,42 +299,47 @@ function aitl_render_html(array $m, array $opts = []): string {
 
     return '<!doctype html><html lang="' . $lang . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<meta name="color-scheme" content="light"><meta name="generator" content="AITL ' . aitl_h($m['aitl']) . '">'
-        . '<title>' . aitl_h($m['titel']) . ' — ' . aitl_h($lang === 'en' ? 'explanation' : 'uitleg') . '</title><style>' . aitl_css() . '</style></head><body>'
+        . '<title>' . aitl_h($m['titel']) . ' — ' . aitl_h($lang === 'en' ? 'explanation' : 'uitleg') . '</title><style>' . (is_string($opts['lettertypeCss'] ?? null) ? str_replace('<', '', $opts['lettertypeCss']) : '') . aitl_css() . '</style></head><body>'
         . $b . '</body></html>';
 }
 
 function aitl_css(): string {
     return <<<CSS
-:root{--blauw:#003399;--inkt:#1b2437;--zacht:#55617c;--papier:#f7f5f0;--kaart:#fff;--lijn:#d8d5ca;--goud:#ffcc00;--ok:#1c6b34;--okbg:#e4f3e8;--fout:#a02020;--foutbg:#fbe5e5;--vgl:#fff8df;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:"Avenir Next",Avenir,"Helvetica Neue",Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
-*{box-sizing:border-box}html{background:var(--papier)}body{margin:0;font:17px/1.6 var(--sans);color:var(--inkt);background:var(--papier)}
-.kop{background:var(--blauw);color:#fff;padding:2.2rem max(1rem,calc(50% - 22rem)) 1.8rem}.kop h1{font:600 2rem/1.2 var(--serif);margin:.3rem 0 .5rem}
-.badge{display:inline-block;background:var(--goud);color:#0a1f4d;font:700 .75rem var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:.25rem .6rem;border-radius:.3rem;margin:0}
-.meta{margin:0;color:#dfe6f7;font-size:.95rem}.lagen{margin:.9rem 0 0;color:#dfe6f7;font-size:.88rem}
-main{max-width:46rem;margin:0 auto;padding:1.2rem 1rem 2rem}section{margin:2.2rem 0}
-h2{font:600 1.45rem/1.25 var(--serif);color:#0a1f4d;border-bottom:3px solid var(--goud);padding-bottom:.3rem;margin:0 0 1rem}
-h3{font:600 1.1rem/1.3 var(--sans);margin:1.2rem 0 .4rem;color:#0a1f4d}p{margin:.4rem 0 .7rem}
-.lead p{font-size:1.1rem}
-.stappen{list-style:none;padding:0;margin:0;display:grid;gap:1rem}.stap,.factor,.regel,.casus,.beperking,.uitkomst{background:var(--kaart);border:1px solid var(--lijn);border-radius:.6rem;padding:1rem 1.2rem}
-.stap h3{margin-top:0}.nr{display:inline-grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--blauw);color:#fff;font:700 .9rem var(--sans);margin-right:.3rem}
-.vergelijking{background:var(--vgl);border-left:4px solid var(--goud);border-radius:.3rem;padding:.6rem .9rem;margin:.8rem 0}.vergelijking p{margin:.25rem 0}.grens{color:#5a4a12;font-size:.95rem}
-details.tech{margin:.6rem 0 0;border-top:1px dashed var(--lijn);padding-top:.5rem}details.tech summary{cursor:pointer;color:var(--blauw);font-weight:600;font-size:.92rem}
-.techbody{font-size:.93rem;color:#2b3550;padding:.4rem 0 0}.techbody pre,code{font-family:var(--mono);font-size:.85rem}pre{background:#f1efe8;border-radius:.4rem;padding:.7rem;overflow-x:auto;white-space:pre-wrap}
-.zekerheid{background:#eef2fb;border-radius:.4rem;padding:.6rem .9rem;margin:.8rem 0}.zlabel{margin:0 0 .3rem}.dots{display:inline-flex;gap:3px;vertical-align:middle;margin:0 .4rem}
-.dot{width:.8rem;height:.8rem;border-radius:50%;border:2px solid var(--blauw);background:#fff}.dot.on{background:var(--blauw)}.zwoord{color:var(--zacht);font-size:.9rem}
-.factoren{display:grid;gap:1rem}.bar{background:#eceae2;border-radius:1rem;height:.7rem;overflow:hidden;margin:.3rem 0}.bar i{display:block;height:100%;background:var(--blauw)}
-.gewicht{color:var(--zacht);font-weight:600;font-size:.9rem}.richting{font-size:.9rem;color:var(--zacht);margin:.2rem 0}
+:root{--blauw:#003399;--blauw50:#f2f5fc;--blauw100:#dfe6f6;--inkt:#101828;--inkt2:#344054;--zacht:#5b677d;--licht:#8a94a6;--papier:#f8f9fb;--kaart:#fff;--lijn:#e4e7ec;--lijn2:#d0d5dd;--vlak:#f1f3f6;--ok:#067647;--okbg:#ecfdf3;--oklijn:#abefc6;--fout:#b42318;--foutbg:#fef3f2;--foutlijn:#fecdca;--sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}html{background:#fff;-webkit-text-size-adjust:100%}body{margin:0;font:16px/1.65 var(--sans);color:var(--inkt2);background:#fff;-webkit-font-smoothing:antialiased}
+h1,h2,h3{color:var(--inkt);font-weight:600;letter-spacing:-.015em;text-wrap:balance}strong,b{font-weight:600;color:var(--inkt)}
+.kop{background:var(--papier);border-bottom:1px solid var(--lijn);padding:2.4rem max(1.25rem,calc(50% - 23rem)) 2rem}
+.kop h1{font-size:2rem;line-height:1.2;letter-spacing:-.03em;margin:.9rem 0 .5rem}
+.badge{display:inline-flex;align-items:center;gap:.45rem;margin:0;background:#fff;border:1px solid var(--lijn);border-radius:999px;color:var(--inkt2);font-size:.78rem;font-weight:600;padding:.2rem .7rem .2rem .55rem}
+.badge::before{content:"";width:.45rem;height:.45rem;border-radius:50%;background:var(--blauw)}
+.meta{margin:0;color:var(--zacht);font-size:.95rem}.lagen{margin:.6rem 0 0;color:var(--licht);font-size:.88rem}
+main{max-width:46rem;margin:0 auto;padding:.6rem 1.25rem 2rem}section{margin:2.6rem 0}
+h2{font-size:1.35rem;line-height:1.3;margin:0 0 .9rem;padding-top:1.6rem;border-top:1px solid var(--lijn)}
+section:first-child{margin-top:1.8rem}section:first-child h2{border-top:0;padding-top:0}
+h3{font-size:1.05rem;line-height:1.35;margin:1.3rem 0 .35rem}p{margin:.4rem 0 .75rem}
+.lead p{font-size:1.1rem;color:var(--inkt)}
+.stappen{list-style:none;padding:0;margin:0;display:grid;gap:.75rem}.stap,.factor,.regel,.casus,.beperking,.uitkomst{background:var(--kaart);border:1px solid var(--lijn);border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.stap h3,.factor h3,.regel h3,.casus h3,.beperking h3,.uitkomst h3{margin-top:0}
+.nr{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--blauw);color:#fff;font-size:.8rem;font-weight:600;margin-right:.45rem;vertical-align:1px}
+.vergelijking{background:var(--blauw50);border:1px solid var(--blauw100);border-radius:8px;padding:.7rem .95rem;margin:.85rem 0}.vergelijking p{margin:.2rem 0}.grens{color:var(--inkt2);font-size:.95rem}
+details.tech{margin:.75rem 0 0;border-top:1px solid var(--vlak);padding-top:.6rem}details.tech summary{cursor:pointer;color:var(--blauw);font-weight:600;font-size:.9rem}
+.techbody{font-size:.92rem;color:var(--inkt2);padding:.4rem 0 0}.techbody pre,code{font-family:var(--mono);font-size:.84rem}pre{background:var(--papier);border:1px solid var(--lijn);border-radius:8px;padding:.7rem .85rem;overflow-x:auto;white-space:pre-wrap}
+.zekerheid{background:var(--papier);border:1px solid var(--lijn);border-radius:8px;padding:.7rem .95rem;margin:.85rem 0}.zlabel{margin:0 0 .3rem}.dots{display:inline-flex;gap:3px;vertical-align:middle;margin:0 .4rem}
+.dot{width:.7rem;height:.7rem;border-radius:50%;border:1.5px solid var(--blauw);background:#fff}.dot.on{background:var(--blauw)}.zwoord{color:var(--zacht);font-size:.9rem}
+.factoren{display:grid;gap:.75rem}.bar{background:var(--vlak);border-radius:999px;height:.5rem;overflow:hidden;margin:.35rem 0}.bar i{display:block;height:100%;background:var(--blauw);border-radius:999px}
+.gewicht{color:var(--zacht);font-weight:600;font-size:.88rem}.richting{font-size:.9rem;color:var(--zacht);margin:.2rem 0}
 .uitzonderingen{padding-left:1.2rem}.uitzonderingen li{margin:.3rem 0}.want{color:var(--zacht)}
-table.gegevens{border-collapse:collapse;width:100%;margin:.6rem 0}table.gegevens caption{text-align:left;font-weight:600;font-size:.9rem;color:var(--zacht);padding-bottom:.3rem}
-table.gegevens th,table.gegevens td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--lijn)}table.gegevens th{font-weight:600;width:50%}
-.uitkomstregel{border-left:4px solid var(--blauw);padding:.2rem 0 .2rem .8rem;margin:.9rem 0}.uitkomstregel .waarde{margin:0;font-size:1.05rem}.lbl{color:var(--zacht)}
-.route{margin:.3rem 0}.controles{padding-left:1.1rem}.controles li.ja{color:var(--ok)}.controles li.nee{color:var(--zacht)}.hier{color:var(--zacht)}
-.verwacht{font-size:.9rem;border-radius:.3rem;padding:.3rem .6rem;display:inline-block}.verwacht.ok{background:var(--okbg);color:var(--ok)}.verwacht.nok{background:var(--foutbg);color:var(--fout)}
-dl.gegevens dt,dl.begrippen dt{font-weight:700;margin-top:1rem}.type,.ook{font-weight:400;color:var(--zacht);font-size:.88rem}dl dd{margin:.2rem 0 0 0}
-a{color:var(--blauw)}a.term{text-decoration:underline dotted;text-underline-offset:3px}.freq{color:var(--zacht);font-size:.92em}
-.over{background:var(--kaart);border:1px solid var(--lijn);border-radius:.6rem;padding:1rem 1.2rem}.principes{padding-left:1.2rem}.principes li.ok{color:var(--ok)}.principes li.nok{color:var(--fout)}
-.hash code{word-break:break-all;font-size:.75rem}.hash,.pub{font-size:.88rem;color:var(--zacht)}.let{color:var(--fout)}
-.voet{text-align:center;color:var(--zacht);font-size:.82rem;padding:1rem 1rem 2rem}
-@media (max-width:600px){body{font-size:16px}.kop h1{font-size:1.6rem}.stap,.factor,.regel,.casus,.beperking,.uitkomst{padding:.8rem .9rem}}
-@media print{html,body{background:#fff}.kop{background:#fff;color:var(--inkt);border-bottom:3px solid var(--blauw);padding:1rem 0}.meta,.lagen{color:var(--zacht)}.stap,.factor,.regel,.casus,.beperking,.uitkomst{break-inside:avoid}a{color:inherit}}
+table.gegevens{border-collapse:collapse;width:100%;margin:.6rem 0;font-size:.95rem}table.gegevens caption{text-align:left;font-weight:600;font-size:.85rem;color:var(--zacht);padding-bottom:.35rem}
+table.gegevens th,table.gegevens td{text-align:left;padding:.5rem .1rem;border-bottom:1px solid var(--vlak)}table.gegevens th{font-weight:400;color:var(--zacht);width:50%}table.gegevens td{color:var(--inkt)}
+.uitkomstregel{border-left:3px solid var(--blauw);padding:.15rem 0 .15rem .9rem;margin:1rem 0}.uitkomstregel .waarde{margin:0;font-size:1.02rem}.lbl{color:var(--zacht)}
+.route{margin:.3rem 0}.controles{padding-left:1.1rem;font-size:.93rem}.controles li.ja{color:var(--ok)}.controles li.nee{color:var(--zacht)}.hier{color:var(--zacht)}
+.verwacht{font-size:.85rem;font-weight:600;border-radius:999px;padding:.2rem .7rem;display:inline-block;border:1px solid}.verwacht.ok{background:var(--okbg);color:var(--ok);border-color:var(--oklijn)}.verwacht.nok{background:var(--foutbg);color:var(--fout);border-color:var(--foutlijn)}
+dl.gegevens dt,dl.begrippen dt{font-weight:600;color:var(--inkt);margin-top:1rem}.type,.ook{font-weight:400;color:var(--licht);font-size:.86rem}dl dd{margin:.2rem 0 0 0}
+a{color:var(--blauw);text-underline-offset:2px}a.term{color:inherit;text-decoration:underline dotted var(--blauw);text-underline-offset:3px}.freq{color:var(--zacht);font-size:.92em}
+.over{background:var(--papier);border:1px solid var(--lijn);border-radius:10px;padding:1.2rem 1.4rem}.over h2{border-top:0;padding-top:0}.principes{padding-left:1.2rem}.principes li.ok{color:var(--ok)}.principes li.nok{color:var(--fout)}
+.hash code{word-break:break-all;font-size:.75rem}.hash,.pub{font-size:.86rem;color:var(--zacht)}.let{color:var(--fout)}
+.voet{text-align:center;color:var(--licht);font-size:.8rem;padding:1rem 1rem 2.4rem}.voet a{color:var(--zacht)}
+@media (max-width:600px){body{font-size:15.5px}.kop{padding:1.8rem 1.1rem 1.5rem}.kop h1{font-size:1.6rem}.stap,.factor,.regel,.casus,.beperking,.uitkomst{padding:.9rem 1rem}}
+@media print{.kop{background:#fff;padding:1rem 0}.stap,.factor,.regel,.casus,.beperking,.uitkomst{break-inside:avoid;box-shadow:none}a{color:inherit}}
 CSS;
 }

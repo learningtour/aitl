@@ -253,6 +253,11 @@ if (part('F. Veiligheid van de weergave')) {
     $r2 = aitl_check("uitleg \"T\"\nbron \"B\"\n  url: javascript:alert(1)\n");
     $h2 = $r2['model'] ? aitl_render_html($r2['model']) : '';
     ok('F javascript-url wordt geweigerd en niet gelinkt', in_array('E041', codes($r2), true) && !str_contains($h2, 'href="javascript'));
+    $sv = aitl_check(file_get_contents(__DIR__ . '/../voorbeelden/studievoortgang.aitl'));
+    $fh = aitl_render_html($sv['model'], ['lettertypeCss' => '@font-face{font-family:"Inter"}</style><script>alert(1)</script>']);
+    $probF = html_ok($fh);
+    ok('F lettertypeCss kan de stijl niet verlaten', !$probF && !str_contains($fh, '<script') && substr_count($fh, '</style>') === 1 && str_contains($fh, '@font-face'));
+    ok('F rapport zonder schreeflettertype', !preg_match('~serif"|Georgia|Palatino|Iowan~', aitl_render_html($sv['model'])));
 }
 
 // ---------------------------------------------------------------------------
